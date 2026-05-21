@@ -1,0 +1,34 @@
+# Global workspace hygiene
+.DS_Store
+Thumbs.db
+
+# Secrets and local env files
+.env
+.env.local
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+
+# IDE/editor
+.idea/
+.vscode/
+
+# Runtime output
+agent/src/leads/*.json
+!agent/src/leads/.gitkeep
