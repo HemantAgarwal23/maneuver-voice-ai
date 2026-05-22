@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { AnimatePresence, type MotionProps, motion } from 'motion/react';
 import { useAgent, useSessionContext, useSessionMessages } from '@livekit/components-react';
 import { AgentChatTranscript } from '@/components/agents-ui/agent-chat-transcript';
@@ -105,56 +105,20 @@ export function Fade({ top = false, bottom = false, className }: FadeProps) {
 }
 
 export interface AgentSessionView_01Props {
-  /**
-   * Message shown above the controls before the first chat message is sent.
-   *
-   * @default 'Agent is listening, ask it a question'
-   */
   preConnectMessage?: string;
-  /**
-   * Enables or disables the chat toggle and transcript input controls.
-   *
-   * @default true
-   */
   supportsChatInput?: boolean;
-  /**
-   * Enables or disables camera controls in the bottom control bar.
-   *
-   * @default true
-   */
   supportsVideoInput?: boolean;
-  /**
-   * Enables or disables screen sharing controls in the bottom control bar.
-   *
-   * @default true
-   */
   supportsScreenShare?: boolean;
-  /**
-   * Shows a pre-connect buffer state with a shimmer message before messages appear.
-   *
-   * @default true
-   */
   isPreConnectBufferEnabled?: boolean;
-
-  /** Selects the visualizer style rendered in the main tile area. */
   audioVisualizerType?: 'bar' | 'wave' | 'grid' | 'radial' | 'aura';
-  /** Primary hex color used by supported audio visualizer variants. */
   audioVisualizerColor?: `#${string}`;
-  /** Hue shift intensity used by certain visualizers. */
   audioVisualizerColorShift?: number;
-  /** Number of bars to render when `audioVisualizerType` is `bar`. */
   audioVisualizerBarCount?: number;
-  /** Number of rows in the visualizer when `audioVisualizerType` is `grid`. */
   audioVisualizerGridRowCount?: number;
-  /** Number of columns in the visualizer when `audioVisualizerType` is `grid`. */
   audioVisualizerGridColumnCount?: number;
-  /** Number of radial bars when `audioVisualizerType` is `radial`. */
   audioVisualizerRadialBarCount?: number;
-  /** Base radius of the radial visualizer when `audioVisualizerType` is `radial`. */
   audioVisualizerRadialRadius?: number;
-  /** Stroke width of the wave path when `audioVisualizerType` is `wave`. */
   audioVisualizerWaveLineWidth?: number;
-  /** Optional class name merged onto the outer `<section>` container. */
   className?: string;
 }
 
@@ -164,7 +128,6 @@ export function AgentSessionView_01({
   supportsVideoInput = true,
   supportsScreenShare = true,
   isPreConnectBufferEnabled = true,
-
   audioVisualizerType,
   audioVisualizerColor,
   audioVisualizerColorShift,
@@ -181,7 +144,6 @@ export function AgentSessionView_01({
   const session = useSessionContext();
   const { messages } = useSessionMessages(session);
   const [chatOpen, setChatOpen] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { state: agentState } = useAgent();
   const discoverySummary = buildDiscoverySummary(messages);
 
@@ -193,15 +155,6 @@ export function AgentSessionView_01({
     screenShare: supportsScreenShare,
   };
 
-  useEffect(() => {
-    const lastMessage = messages.at(-1);
-    const lastMessageIsLocal = lastMessage?.from?.isLocal === true;
-
-    if (scrollAreaRef.current && lastMessageIsLocal) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
-  }, [messages]);
-
   return (
     <section
       ref={ref}
@@ -209,58 +162,58 @@ export function AgentSessionView_01({
       {...props}
     >
       <Fade top className="absolute inset-x-4 top-0 z-20 h-20 md:h-40" />
-      <div className="absolute top-16 left-3 z-40 md:top-24 md:left-6">
+      <div className="absolute top-16 left-4 z-40 md:top-24 md:left-8">
         <AgentStatusPill agentState={agentState} />
       </div>
 
-      <div className="absolute top-24 bottom-[132px] z-30 flex w-full flex-col px-3 md:top-32 md:bottom-[170px] md:px-6">
+      <div className="absolute top-24 bottom-[132px] z-30 flex w-full flex-col px-4 md:top-32 md:bottom-[172px] md:px-8">
         <AnimatePresence>
           <motion.div
             {...CHAT_MOTION_PROPS}
-            className="grid h-full w-full min-h-0 gap-3 transition-opacity duration-300 ease-out lg:grid-cols-[320px_minmax(0,1fr)_340px]"
+            className="grid h-full w-full min-h-0 gap-4 transition-opacity duration-300 ease-out lg:grid-cols-[minmax(300px,360px)_minmax(0,1fr)_minmax(300px,360px)]"
           >
             <div className="bg-card/90 border-border/70 hidden h-full min-h-0 rounded-2xl border shadow-sm backdrop-blur-md lg:flex lg:flex-col">
-              <div className="border-border/60 flex items-center justify-between border-b px-4 py-3">
-                <p className="text-xs font-semibold tracking-wide uppercase">Transcript History</p>
+              <div className="border-border/60 flex items-center justify-between border-b px-4 py-3.5">
+                <p className="text-xs font-semibold tracking-wide uppercase">Conversation</p>
               </div>
               <AgentChatTranscript
                 agentState={agentState}
                 messages={messages}
-                className="h-full w-full [&_.is-user>div]:rounded-[18px] [&>div>div]:px-3 [&>div>div]:pt-3"
+                className="h-full w-full [&_.is-user>div]:rounded-[18px] [&_.is-user>div]:bg-sky-500/10 [&_.is-user>div]:border-sky-400/20 [&_.is-assistant>div]:bg-emerald-500/8 [&_.is-assistant>div]:border-emerald-400/20 [&>div>div]:px-3 [&>div>div]:pt-3"
               />
             </div>
 
             <div className="pointer-events-none hidden lg:block" />
 
-            <div className="bg-card/90 border-border/70 hidden h-full overflow-y-auto rounded-2xl border p-3 shadow-sm backdrop-blur-md lg:block">
+            <div className="bg-card/90 border-border/70 hidden h-full overflow-y-auto rounded-2xl border p-3.5 shadow-sm backdrop-blur-md lg:block">
               <DiscoverySummaryPanel summary={discoverySummary} />
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      <div className="absolute inset-x-3 top-[92px] bottom-[132px] z-30 md:hidden">
-        <div className="grid h-full min-h-0 grid-rows-[minmax(0,1fr)_220px] gap-3">
+      <div className="absolute inset-x-4 top-[98px] bottom-[132px] z-30 md:hidden">
+        <div className="grid h-full min-h-0 grid-rows-[minmax(0,1fr)_240px] gap-3.5">
           <div className="pointer-events-none" />
           <div className="bg-card/90 border-border/70 min-h-0 rounded-2xl border shadow-sm backdrop-blur-md">
-            <div className="border-border/60 flex items-center justify-between border-b px-3 py-2">
-              <p className="text-xs font-semibold tracking-wide uppercase">Transcript History</p>
+            <div className="border-border/60 flex items-center justify-between border-b px-3.5 py-2.5">
+              <p className="text-xs font-semibold tracking-wide uppercase">Conversation</p>
             </div>
             <AgentChatTranscript
               agentState={agentState}
               messages={messages}
-              className="h-full w-full [&_.is-user>div]:rounded-[16px] [&>div>div]:px-3 [&>div>div]:pt-2"
+              className="h-full w-full [&_.is-user>div]:rounded-[16px] [&_.is-user>div]:bg-sky-500/10 [&_.is-user>div]:border-sky-400/20 [&_.is-assistant>div]:bg-emerald-500/8 [&_.is-assistant>div]:border-emerald-400/20 [&>div>div]:px-3 [&>div>div]:pt-2.5"
             />
           </div>
         </div>
       </div>
 
-      <div className="absolute right-3 bottom-[208px] z-30 w-[min(92vw,420px)] md:hidden">
-        <div className="bg-card/90 border-border/70 max-h-[190px] overflow-y-auto rounded-2xl border p-2 shadow-sm backdrop-blur-md">
+      <div className="absolute right-4 bottom-[228px] z-30 w-[min(91vw,440px)] md:hidden">
+        <div className="bg-card/90 border-border/70 max-h-[220px] overflow-y-auto rounded-2xl border p-2.5 shadow-sm backdrop-blur-md">
           <DiscoverySummaryPanel summary={discoverySummary} />
         </div>
       </div>
-      {/* Tile layout */}
+
       <TileLayout
         chatOpen={chatOpen}
         audioVisualizerType={audioVisualizerType}
@@ -273,12 +226,11 @@ export function AgentSessionView_01({
         audioVisualizerGridColumnCount={audioVisualizerGridColumnCount}
         audioVisualizerWaveLineWidth={audioVisualizerWaveLineWidth}
       />
-      {/* Bottom */}
+
       <motion.div
         {...BOTTOM_VIEW_MOTION_PROPS}
         className="absolute inset-x-3 bottom-0 z-50 md:inset-x-12"
       >
-        {/* Pre-connect message */}
         {isPreConnectBufferEnabled && (
           <AnimatePresence>
             {messages.length === 0 && (

@@ -28,36 +28,51 @@ export const WelcomeView = ({
   onStartCall,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
+  const suggestedPrompts = [
+    'Help me identify AI use cases for my support team.',
+    'I want to automate lead qualification calls.',
+    'Our response time is slow. What should we improve first?',
+  ];
+
   return (
-    <div ref={ref}>
-      <section className="bg-background flex flex-col items-center justify-center text-center">
+    <div ref={ref} className="relative min-h-svh overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.08),transparent_45%),radial-gradient(circle_at_85%_80%,rgba(16,185,129,0.08),transparent_45%)]" />
+      <section className="bg-background relative z-10 mx-auto flex min-h-svh w-full max-w-4xl flex-col items-center justify-center px-6 py-12 text-center">
         <WelcomeImage />
 
-        <p className="text-foreground max-w-prose pt-1 leading-6 font-medium">
-          Chat live with your voice AI agent
+        <p className="text-foreground max-w-2xl pt-1 text-2xl leading-9 font-semibold">
+          Real-time AI Business Consultant
+        </p>
+        <p className="text-muted-foreground mt-2 max-w-xl text-sm leading-6 md:text-base">
+          Start a live discovery call to map business pain points, identify AI opportunities, and
+          generate structured lead insights.
         </p>
 
         <Button
           size="lg"
           onClick={onStartCall}
-          className="mt-6 w-64 rounded-full font-mono text-xs font-bold tracking-wider uppercase"
+          className="mt-8 w-64 rounded-full font-mono text-xs font-bold tracking-wider uppercase shadow-lg shadow-sky-900/20"
         >
           {startButtonText}
         </Button>
+
+        <div className="mt-8 w-full max-w-2xl rounded-2xl border border-border/70 bg-card/70 p-4 text-left backdrop-blur-sm">
+          <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
+            Suggested prompts
+          </p>
+          <div className="grid gap-2">
+            {suggestedPrompts.map((prompt) => (
+              <div key={prompt} className="rounded-lg border border-border/60 bg-background/60 px-3 py-2.5">
+                <p className="text-sm leading-5">{prompt}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      <div className="fixed bottom-5 left-0 flex w-full items-center justify-center">
-        <p className="text-muted-foreground max-w-prose pt-1 text-xs leading-5 font-normal text-pretty md:text-sm">
-          Need help getting set up? Check out the{' '}
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://docs.livekit.io/agents/start/voice-ai/"
-            className="underline"
-          >
-            Voice AI quickstart
-          </a>
-          .
+      <div className="absolute bottom-5 left-0 z-10 flex w-full items-center justify-center px-4">
+        <p className="text-muted-foreground max-w-prose text-center text-xs leading-5 font-normal text-pretty md:text-sm">
+          Tip: speak naturally. The consultant will guide discovery and capture key business details automatically.
         </p>
       </div>
     </div>
