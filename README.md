@@ -38,6 +38,8 @@ Teams need a system that can guide conversations naturally, extract key business
 - JSON lead storage (one lead per file)
 - Graceful fallback messaging if Gemini/LLM fails
 - Responsive, modern SaaS-style UI
+- Tool-driven visual sync over LiveKit data channel (`ui.visual` topic)
+- Founder dashboard to review captured leads (`/founder`)
 
 ## 4. Tech Stack
 
@@ -46,6 +48,17 @@ Teams need a system that can guide conversations naturally, extract key business
 - **Realtime Voice Infrastructure:** LiveKit
 - **LLM Layer:** Gemini
 - **Data Storage:** Local JSON files (`agent/src/leads/`)
+
+### Model and Provider Choices (with rationale)
+
+- **STT:** `deepgram/nova-3` via LiveKit Inference  
+  Chosen for fast, reliable real-time transcription quality.
+- **LLM:** Gemini (`gemini-2.5-flash`) with fallback (`gemini-3-flash-preview`)  
+  Chosen for low-latency conversational reasoning; fallback improves resilience when a model endpoint fails.
+- **TTS:** `cartesia/sonic-3`  
+  Chosen for natural voice quality and smooth conversational delivery.
+- **Turn Detection:** LiveKit multilingual turn detector + Silero VAD  
+  Chosen to reduce interruptions and improve natural pause handling.
 
 ## 5. System Architecture
 
@@ -101,6 +114,13 @@ Frontend Transcript + Discovery Summary Panels
 ### Discovery Complete (8/8 Captured)
 ![Discovery Complete](docs/screenshots/04-discovery-complete.png)
 
+### Live Visual Layer (Bonus)
+- The center panel reacts to conversation context in real time:
+  - services view
+  - service-detail focus
+  - process diagram
+  - pricing and case-study cards
+
 ## 9. Installation and Setup
 
 ### Prerequisites
@@ -130,6 +150,7 @@ npm run dev
 ```
 
 Open: `http://localhost:3000`
+Founder view: `http://localhost:3000/founder`
 
 ## 10. Environment Variables
 

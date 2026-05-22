@@ -79,6 +79,7 @@ class Assistant(Agent):
             "goals": "",
         }
         self.lead_saved = False
+        self.room = None
 
         primary_llm = google.LLM(model="gemini-2.5-flash")
         secondary_llm = google.LLM(model="gemini-3-flash-preview")
@@ -127,14 +128,17 @@ class Assistant(Agent):
                 - Example: for logistics companies, explore support volume, dispatch/routing workflows,
                   operations bottlenecks, automation opportunities, and reporting/analytics gaps.
                 - Keep follow-ups specific and practical, not generic.
+                - When a user asks about services/process/pricing/case studies, call the matching UI tool first:
+                  show_services_slide, show_process_diagram, show_pricing_card, show_case_studies, show_service_detail.
 
                 Closing behavior:
                 - Once discovery is sufficiently complete, call save_lead.
-                - Then give a concise recommendation close:
-                  1) top AI opportunities,
-                  2) likely quick win,
-                  3) suggested next step for pilot execution.
+                - Then give a concise recommendation close in this style:
+                  "Thanks for sharing the details. Based on your logistics startup, customer query automation is the strongest AI opportunity.
+                  A conversational voice/chat assistant could reduce repetitive support workload for your team.
+                  Your discovery summary has been captured successfully. You can now review the recommended next steps."
                 - Keep closing short and executive-friendly.
+                - Never imply real-world follow-up actions such as contacting, reaching out, emailing, or scheduling on behalf of the user.
 
                 Tool and data rules:
                 - Do not ask the user to provide JSON.
@@ -149,6 +153,16 @@ class Assistant(Agent):
 
     def _is_discovery_complete(self) -> bool:
         return all(bool(self.discovery[field].strip()) for field in DISCOVERY_FIELDS)
+
+    async def _publish_visual_event(self, event_type: str, payload: dict[str, str]) -> None:
+        if self.room is None:
+            return
+        event = {"type": event_type, **payload}
+        await self.room.local_participant.publish_data(
+            json.dumps(event),
+            reliable=True,
+            topic="ui.visual",
+        )
 
     def _merge_discovery(self, updates: dict[str, str]) -> None:
         for field in DISCOVERY_FIELDS:
@@ -203,6 +217,12 @@ class Assistant(Agent):
             "goals": goals,
         }
         self._merge_discovery(updates)
+        for field, value in updates.items():
+            if value and value.strip():
+                await self._publish_visual_event(
+                    "update_lead_field",
+                    {"field": field, "value": value.strip()},
+                )
 
         if self._is_discovery_complete() and not self.lead_saved:
             saved_path = self._save_discovery_to_file()
@@ -212,6 +232,41 @@ class Assistant(Agent):
         if not missing:
             return "Discovery updated. All fields are complete."
         return f"Discovery updated. Remaining fields: {', '.join(missing)}."
+
+    @function_tool
+    async def show_services_slide(self, context: RunContext) -> str:
+        """Trigger services visual panel on the frontend."""
+        _ = context
+        await self._publish_visual_event("show_services_slide", {})
+        return "Services visual shown."
+
+    @function_tool
+    async def show_service_detail(self, context: RunContext, name: str) -> str:
+        """Trigger a specific service detail card on the frontend."""
+        _ = context
+        await self._publish_visual_event("show_service_detail", {"name": name})
+        return f"Service detail shown for {name}."
+
+    @function_tool
+    async def show_process_diagram(self, context: RunContext) -> str:
+        """Trigger process diagram visual on the frontend."""
+        _ = context
+        await self._publish_visual_event("show_process_diagram", {})
+        return "Process visual shown."
+
+    @function_tool
+    async def show_pricing_card(self, context: RunContext) -> str:
+        """Trigger pricing visual on the frontend."""
+        _ = context
+        await self._publish_visual_event("show_pricing_card", {})
+        return "Pricing visual shown."
+
+    @function_tool
+    async def show_case_studies(self, context: RunContext) -> str:
+        """Trigger case studies visual on the frontend."""
+        _ = context
+        await self._publish_visual_event("show_case_studies", {})
+        return "Case studies visual shown."
 
     @function_tool
     async def get_discovery_summary(self, context: RunContext) -> str:
@@ -337,8 +392,11 @@ async def my_agent(ctx: JobContext):
     _attach_resilience_handlers(session)
 
     # Start the session, which initializes the voice pipeline and warms up the models
+    assistant = Assistant()
+    assistant.room = ctx.room
+
     await session.start(
-        agent=Assistant(),
+        agent=assistant,
         room=ctx.room,
         room_options=room_io.RoomOptions(
             audio_input=room_io.AudioInputOptions(

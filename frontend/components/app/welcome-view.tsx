@@ -71,9 +71,14 @@ export const WelcomeView = ({
       </section>
 
       <div className="absolute bottom-5 left-0 z-10 flex w-full items-center justify-center px-4">
-        <p className="text-muted-foreground max-w-prose text-center text-xs leading-5 font-normal text-pretty md:text-sm">
-          Tip: speak naturally. The consultant will guide discovery and capture key business details automatically.
-        </p>
+        <div className="text-center">
+          <p className="text-muted-foreground max-w-prose text-xs leading-5 font-normal text-pretty md:text-sm">
+            Tip: speak naturally. The consultant will guide discovery and capture key business details automatically.
+          </p>
+          <a href="/founder" className="text-sky-300 mt-1 inline-block text-xs underline underline-offset-4">
+            Open Founder Dashboard
+          </a>
+        </div>
       </div>
     </div>
   );

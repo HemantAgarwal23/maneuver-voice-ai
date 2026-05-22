@@ -10,7 +10,9 @@ import {
 } from '@/components/agents-ui/agent-control-bar';
 import { AgentStatusPill } from '@/components/app/agent-status-pill';
 import { DiscoverySummaryPanel } from '@/components/app/discovery-summary-panel';
+import { LiveVisualPanel } from '@/components/app/live-visual-panel';
 import { Shimmer } from '@/components/ai-elements/shimmer';
+import { useVisualSync } from '@/hooks/use-visual-sync';
 import { buildDiscoverySummary } from '@/lib/discovery';
 import { cn } from '@/lib/shadcn/utils';
 import { TileLayout } from './tile-view';
@@ -146,6 +148,7 @@ export function AgentSessionView_01({
   const [chatOpen, setChatOpen] = useState(false);
   const { state: agentState } = useAgent();
   const discoverySummary = buildDiscoverySummary(messages);
+  const { visualState } = useVisualSync();
 
   const controls: AgentControlBarControls = {
     leave: true,
@@ -183,7 +186,9 @@ export function AgentSessionView_01({
               />
             </div>
 
-            <div className="pointer-events-none hidden lg:block" />
+            <div className="hidden h-full min-h-0 lg:block">
+              <LiveVisualPanel messages={messages} visualStateOverride={visualState} />
+            </div>
 
             <div className="bg-card/90 border-border/70 hidden h-full overflow-y-auto rounded-2xl border p-3.5 shadow-sm backdrop-blur-md lg:block">
               <DiscoverySummaryPanel summary={discoverySummary} />
